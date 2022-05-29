@@ -1,0 +1,50 @@
+        public async Task<FileContentResult> makeFileReady(Report report)
+        {
+            
+            List<Report_ResultViewModel> data_1 = null;
+            stack_dl_result = report.result;
+            DataTable dt_1 = new DataTable("Result_1");
+            DataTable dt_2 = new DataTable("Result_2");
+            dt_1.Columns.AddRange(new DataColumn[2] { new DataColumn("TimeStamp"),
+                                            new DataColumn("Value") });
+            dt_2.Columns.AddRange(new DataColumn[2] { new DataColumn("TimeStamp"),
+                                            new DataColumn("Value") });
+
+
+            data_1 = stack_dl_result.Skip(0).Take(1000000).ToList();
+            for (int i = 0; i < data_1.Count; i++)
+            {
+                dt_1.Rows.Add(data_1[i].TimeStampToPersian, data_1[i].Value);
+            }
+            data_1.Clear();
+            data_1 = stack_dl_result.Skip(1000001).Take(1000000).ToList();
+            for (int i = 0; i < data_1.Count; i++)
+            {
+                dt_2.Rows.Add( data_1[i].TimeStampToPersian, data_1[i].Value);
+            }
+
+            using (XLWorkbook wb = new XLWorkbook(MyServer.MapPath(@"\Excels\Report_1.xlsm")))
+            {
+
+                wb.Style.Border.TopBorder = XLBorderStyleValues.Thick;
+                wb.Style.Border.BottomBorder = XLBorderStyleValues.Thick;
+                wb.Style.Font.Bold = true;
+                wb.Style.Font.FontSize = 18;
+                wb.Style.Font.FontName = "Times New Roman";
+                //wb.Style.Font.Italic = true;
+                //wb.Outline = border.outline;
+                wb.ColumnWidth = 32;
+                wb.RightToLeft = true;
+                wb.RowHeight = 30;
+                wb.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                wb.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                wb.Worksheets.Add(dt_1);
+                wb.Worksheets.Add(dt_2);
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    return File(stream.ToArray(), "application/vnd.ms-excel.sheet.macroEnabled.12", "users.xlsm");
+                }
+            }
+        }
